@@ -14,27 +14,28 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.DisplayMetrics
+import android.provider.Settings
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.lifecycle.lifecycleScope
+import androidx.activity.viewModels
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var actionButton: Button
     private lateinit var responseTextView: TextView
     private lateinit var promptEditText: EditText
+    private lateinit var enableAccessibilityButton: Button
     private val apiKey = BuildConfig.API_KEY
 
     private lateinit var mediaProjectionManager: MediaProjectionManager
     private var mediaProjection: MediaProjection? = null
     private var virtualDisplay: VirtualDisplay? = null
     private lateinit var imageReader: ImageReader
+
+    private val viewModel: MainViewModel by viewModels()
 
     private val screenCaptureLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -52,12 +53,32 @@ class MainActivity : AppCompatActivity() {
         actionButton = findViewById(R.id.action_button)
         responseTextView = findViewById(R.id.response_textview)
         promptEditText = findViewById(R.id.prompt_edittext)
+        enableAccessibilityButton = findViewById(R.id.enable_accessibility_button)
 
         mediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
 
         actionButton.setOnClickListener {
             val captureIntent = mediaProjectionManager.createScreenCaptureIntent()
             screenCaptureLauncher.launch(captureIntent)
+        }
+
+        enableAccessibilityButton.setOnClickListener {
+            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+            startActivity(intent)
+        }
+
+        viewModel.response.observe(this) { response ->
+            responseTextView.text = response
+            // Send the command to the accessibility service
+            val intent = Intent(MyAccessibilityService.ACTION_PERFORM_ACTION)
+            intent.putExtra(MyAccessibilityService.EXTRA_ACTION_COMMAND, response)
+            LocalBroadcastManager.getInstance(this@MainActivity).sendBroadcast(intent)
+            stopScreenCapture()
+        }
+
+        viewModel.error.observe(this) { error ->
+            responseTextView.text = "Error: $error"
+            stopScreenCapture()
         }
     }
 
@@ -99,26 +120,9 @@ class MainActivity : AppCompatActivity() {
                 bitmap.copyPixelsFromBuffer(buffer)
                 image.close()
 
-                // Now we have the bitmap, let's call the Gemini API
-                lifecycleScope.launch(Dispatchers.IO) {
-                    val prompt = promptEditText.text.toString()
-                    try {
-                        val response = GeminiPro.getResponse(apiKey, prompt, bitmap)
-                        withContext(Dispatchers.Main) {
-                            responseTextView.text = response
-                            // Send the command to the accessibility service
-                            val intent = Intent(MyAccessibilityService.ACTION_PERFORM_ACTION)
-                            intent.putExtra(MyAccessibilityService.EXTRA_ACTION_COMMAND, response)
-                            LocalBroadcastManager.getInstance(this@MainActivity).sendBroadcast(intent)
-                        }
-                    } catch (e: Exception) {
-                        withContext(Dispatchers.Main) {
-                            responseTextView.text = "Error: ${e.message}"
-                        }
-                    } finally {
-                        stopScreenCapture()
-                    }
-                }
+                // Now we have the bitmap, let's call the Gemini API via the ViewModel
+                val prompt = promptEditText.text.toString()
+                viewModel.getResponse(apiKey, prompt, bitmap)
             }
         }, 1000)
     }

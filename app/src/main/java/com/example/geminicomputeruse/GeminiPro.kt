@@ -13,9 +13,7 @@ object GeminiPro {
         }
 
         val generativeModel = GenerativeModel(
-            // As of October 2025, "gemini-2.5-computer-use-preview-10-2025" is the correct model
-            // for this use case, according to the Google AI documentation.
-            modelName = "gemini-2.5-computer-use-preview-10-2025",
+            modelName = "gemini-pro-vision",
             apiKey = apiKey,
             generationConfig = config
         )
