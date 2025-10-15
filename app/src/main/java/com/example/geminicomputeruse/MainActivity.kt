@@ -16,7 +16,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
-import android.util.Base64
 import android.widget.Button
 import android.widget.EditText
 import androidx.activity.result.contract.ActivityResultContracts
@@ -24,8 +23,6 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.window.layout.WindowMetricsCalculator
-import java.io.ByteArrayOutputStream
-
 class MainActivity : AppCompatActivity() {
 
     private lateinit var actionButton: Button
@@ -157,13 +154,9 @@ class MainActivity : AppCompatActivity() {
                 bitmap.copyPixelsFromBuffer(buffer)
                 image.close()
 
-                val outputStream = ByteArrayOutputStream()
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
-                val base64Image = Base64.encodeToString(outputStream.toByteArray(), Base64.DEFAULT)
-
-                // Now we have the base64 image, let's call the Gemini API via the ViewModel
+                // Now we have the bitmap, let's call the Gemini API via the ViewModel
                 val prompt = promptEditText.text.toString()
-                viewModel.getResponse(apiKey, prompt, base64Image)
+                viewModel.getResponse(apiKey, prompt, bitmap)
                 // The screen capture will be stopped by the error observer if an error occurs
             }
         }, 1000)
