@@ -12,29 +12,23 @@ import android.media.ImageReader
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
-import android.view.View
+import android.util.Base64
 import android.widget.Button
 import android.widget.EditText
-import android.widget.ScrollView
-import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.lifecycleScope
 import androidx.window.layout.WindowMetricsCalculator
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
+import java.io.ByteArrayOutputStream
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var actionButton: Button
-    private lateinit var logTextView: TextView
-    private lateinit var logScrollView: ScrollView
     private lateinit var promptEditText: EditText
     private lateinit var enableAccessibilityButton: Button
     private val apiKey = BuildConfig.API_KEY
@@ -74,10 +68,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         actionButton = findViewById(R.id.action_button)
-        logTextView = findViewById(R.id.log_textview)
-        logScrollView = findViewById(R.id.log_scrollview)
         promptEditText = findViewById(R.id.prompt_edittext)
-        val clearLogsButton = findViewById<Button>(R.id.clear_logs_button)
         enableAccessibilityButton = findViewById(R.id.enable_accessibility_button)
 
         mediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
@@ -92,20 +83,9 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        clearLogsButton.setOnClickListener {
-            logTextView.text = "Logs cleared..."
-        }
-
-        viewModel.error.observe(this) { error ->
-            logTextView.append("\nError: $error")
+        viewModel.error.observe(this) {
+            // We can add a toast or some other UI feedback here if needed
             stopScreenCapture()
-        }
-
-        lifecycleScope.launch {
-            LogBus.logs.collectLatest { log ->
-                logTextView.append("\n$log")
-                logScrollView.post { logScrollView.fullScroll(View.FOCUS_DOWN) }
-            }
         }
 
         askNotificationPermission()
@@ -177,9 +157,13 @@ class MainActivity : AppCompatActivity() {
                 bitmap.copyPixelsFromBuffer(buffer)
                 image.close()
 
-                // Now we have the bitmap, let's call the Gemini API via the ViewModel
+                val outputStream = ByteArrayOutputStream()
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+                val base64Image = Base64.encodeToString(outputStream.toByteArray(), Base64.DEFAULT)
+
+                // Now we have the base64 image, let's call the Gemini API via the ViewModel
                 val prompt = promptEditText.text.toString()
-                viewModel.getResponse(apiKey, prompt, bitmap)
+                viewModel.getResponse(apiKey, prompt, base64Image)
                 // The screen capture will be stopped by the error observer if an error occurs
             }
         }, 1000)

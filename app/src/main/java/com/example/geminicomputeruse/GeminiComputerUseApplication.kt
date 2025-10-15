@@ -14,7 +14,7 @@ class GeminiComputerUseApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
-        LogBus.initialize(this)
+        FileLogger.initialize(this)
         Thread.setDefaultUncaughtExceptionHandler(CrashHandler(this))
     }
 

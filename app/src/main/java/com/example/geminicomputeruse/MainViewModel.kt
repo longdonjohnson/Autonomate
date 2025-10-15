@@ -1,7 +1,6 @@
 package com.example.geminicomputeruse
 
 import android.app.Application
-import android.graphics.Bitmap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -16,16 +15,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _error = MutableLiveData<String>()
     val error: LiveData<String> = _error
 
-    fun getResponse(apiKey: String, prompt: String, image: Bitmap) {
+    fun getResponse(apiKey: String, prompt: String, base64Image: String) {
         statusNotificationManager.show("Thinking...")
+        FileLogger.log("MainViewModel", "Sending request to Gemini...")
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val result = GeminiPro.getResponse(apiKey, prompt, image)
-                LogBus.log("Gemini Response: $result")
+                val result = GeminiPro.getResponse(apiKey, prompt, base64Image)
+                FileLogger.log("MainViewModel", "Gemini Response: $result")
                 AccessibilityCommandBus.sendCommand(result)
                 statusNotificationManager.update("Action sent.")
             } catch (e: Exception) {
-                LogBus.log("Error getting response from Gemini: ${e.message}")
+                FileLogger.log("MainViewModel", "Error getting response from Gemini: ${e.message}")
                 _error.postValue(e.message)
                 statusNotificationManager.update("Error: ${e.message}")
             }

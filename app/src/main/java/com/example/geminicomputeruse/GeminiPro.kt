@@ -7,7 +7,7 @@ import com.google.ai.client.generativeai.type.generationConfig
 
 object GeminiPro {
 
-    suspend fun getResponse(apiKey: String, prompt: String, image: Bitmap): String {
+    suspend fun getResponse(apiKey: String, prompt: String, base64Image: String): String {
         val config = generationConfig {
             temperature = 0.7f
         }
@@ -21,8 +21,9 @@ object GeminiPro {
         )
 
         val inputContent = content {
-            image(image)
             text(prompt)
+            // The image is sent as a base64 string. The model expects the image to be in PNG format.
+            image(Base64.getDecoder().decode(base64Image))
         }
 
         val response = generativeModel.generateContent(inputContent)

@@ -21,10 +21,10 @@ class MyAccessibilityService : AccessibilityService() {
 
     override fun onServiceConnected() {
         super.onServiceConnected()
-        serviceScope.launch { LogBus.log("Accessibility Service connected") }
+        FileLogger.log("MyAccessibilityService", "Service connected")
         serviceScope.launch {
             AccessibilityCommandBus.commands.collectLatest { command ->
-                serviceScope.launch { LogBus.log("Command received: $command") }
+                FileLogger.log("MyAccessibilityService", "Command received: $command")
                 processCommand(command)
             }
         }
@@ -35,18 +35,18 @@ class MyAccessibilityService : AccessibilityService() {
     }
 
     private fun processCommand(command: String) {
-        serviceScope.launch { LogBus.log("Processing command: $command") }
+        FileLogger.log("MyAccessibilityService", "Processing command: $command")
         try {
             val actionData = gson.fromJson(command, ActionData::class.java)
             val rootNode = rootInActiveWindow ?: return
             val targetNode = findNodeByText(rootNode, actionData.target)
 
             if (targetNode == null) {
-                serviceScope.launch { LogBus.log("Target node not found for target: ${actionData.target}") }
+                FileLogger.log("MyAccessibilityService", "Target node not found for target: ${actionData.target}")
                 return
             }
 
-            serviceScope.launch { LogBus.log("Performing action '${actionData.action}' on target: ${actionData.target}") }
+            FileLogger.log("MyAccessibilityService", "Performing action '${actionData.action}' on target: ${actionData.target}")
             when (actionData.action.lowercase()) {
                 "click" -> targetNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                 "type" -> {
