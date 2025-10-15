@@ -99,6 +99,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         askNotificationPermission()
+        askStoragePermission()
     }
 
     private fun askNotificationPermission() {
@@ -116,6 +117,14 @@ class MainActivity : AppCompatActivity() {
             } else {
                 // Directly ask for the permission
                 requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+    }
+
+    private fun askStoragePermission() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             }
         }
     }
