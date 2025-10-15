@@ -13,8 +13,7 @@ class CrashHandler(private val context: Context) : Thread.UncaughtExceptionHandl
         throwable.printStackTrace(PrintWriter(stringWriter))
         val stackTrace = stringWriter.toString()
 
-        val fileLogger = FileLogger(context)
-        fileLogger.log("FATAL EXCEPTION: ${throwable.message}\n$stackTrace")
+        FileLogger.log("CrashHandler", "FATAL EXCEPTION: ${throwable.message}\n$stackTrace")
 
         defaultHandler?.uncaughtException(thread, throwable)
     }

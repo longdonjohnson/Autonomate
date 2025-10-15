@@ -23,6 +23,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.window.layout.WindowMetricsCalculator
+
 class MainActivity : AppCompatActivity() {
 
     private lateinit var actionButton: Button

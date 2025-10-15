@@ -67,7 +67,7 @@ class MyAccessibilityService : AccessibilityService() {
                 }
             }
         } catch (e: JsonSyntaxException) {
-            // Handle cases where the command is not valid JSON
+            FileLogger.log("MyAccessibilityService", "Error processing command: ${e.message}")
         }
     }
 
