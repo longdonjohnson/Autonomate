@@ -2,6 +2,7 @@ package com.example.geminicomputeruse
 
 import android.app.Application
 import android.graphics.Bitmap
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -21,9 +22,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val result = GeminiPro.getResponse(apiKey, prompt, image)
+                Log.d("MainViewModel", "Gemini Response: $result")
                 AccessibilityCommandBus.sendCommand(result)
                 statusNotificationManager.update("Action sent.")
             } catch (e: Exception) {
+                Log.e("MainViewModel", "Error getting response from Gemini", e)
                 _error.postValue(e.message)
                 statusNotificationManager.update("Error: ${e.message}")
             }

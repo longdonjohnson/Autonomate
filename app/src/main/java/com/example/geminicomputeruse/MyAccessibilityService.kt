@@ -1,9 +1,10 @@
 package com.example.geminicomputeruse
 
 import android.accessibilityservice.AccessibilityService
-import android.view.accessibility.AccessibilityNodeInfo
 import android.os.Bundle
+import android.util.Log
 import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityNodeInfo
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import kotlinx.coroutines.CoroutineScope
@@ -21,8 +22,10 @@ class MyAccessibilityService : AccessibilityService() {
 
     override fun onServiceConnected() {
         super.onServiceConnected()
+        Log.d("MyAccessibilityService", "Service connected")
         serviceScope.launch {
             AccessibilityCommandBus.commands.collectLatest { command ->
+                Log.d("MyAccessibilityService", "Command received: $command")
                 processCommand(command)
             }
         }
@@ -34,12 +37,19 @@ class MyAccessibilityService : AccessibilityService() {
 
     private fun processCommand(command: String) {
         try {
+            Log.d("MyAccessibilityService", "Processing command: $command")
             val actionData = gson.fromJson(command, ActionData::class.java)
             val rootNode = rootInActiveWindow ?: return
             val targetNode = findNodeByText(rootNode, actionData.target)
 
+            if (targetNode == null) {
+                Log.w("MyAccessibilityService", "Target node not found for target: ${actionData.target}")
+                return
+            }
+
+            Log.d("MyAccessibilityService", "Performing action '${actionData.action}' on target: ${actionData.target}")
             when (actionData.action.lowercase()) {
-                "click" -> targetNode?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                "click" -> targetNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                 "type" -> {
                     val arguments = Bundle()
                     arguments.putCharSequence(
