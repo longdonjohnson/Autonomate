@@ -5,6 +5,8 @@ import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.content
 import com.google.ai.client.generativeai.type.generationConfig
 
+import android.util.Base64
+
 object GeminiPro {
 
     suspend fun getResponse(apiKey: String, prompt: String, base64Image: String): String {
@@ -23,7 +25,7 @@ object GeminiPro {
         val inputContent = content {
             text(prompt)
             // The image is sent as a base64 string. The model expects the image to be in PNG format.
-            image(Base64.getDecoder().decode(base64Image))
+            image(Base64.decode(base64Image, Base64.DEFAULT))
         }
 
         val response = generativeModel.generateContent(inputContent)
