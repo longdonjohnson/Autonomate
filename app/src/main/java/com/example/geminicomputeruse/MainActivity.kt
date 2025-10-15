@@ -21,6 +21,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.window.layout.WindowMetricsCalculator
 
+class MainActivity : AppCompatActivity() {
+
     private lateinit var actionButton: Button
     private lateinit var responseTextView: TextView
     private lateinit var promptEditText: EditText
