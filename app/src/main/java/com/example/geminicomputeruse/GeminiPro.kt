@@ -2,8 +2,10 @@ package com.example.geminicomputeruse
 
 import android.graphics.Bitmap
 import com.google.ai.client.generativeai.GenerativeModel
+import com.google.ai.client.generativeai.type.GenerateContentConfig
 import com.google.ai.client.generativeai.type.content
 import com.google.ai.client.generativeai.type.generationConfig
+import com.google.ai.client.generativeai.type.tool
 
 object GeminiPro {
 
@@ -15,7 +17,10 @@ object GeminiPro {
         val generativeModel = GenerativeModel(
             modelName = "gemini-2.5-computer-use-preview-10-2025",
             apiKey = apiKey,
-            generationConfig = config
+            generationConfig = config,
+            tools = listOf(tool {
+                computerUse()
+            })
         )
 
         val inputContent = content {
