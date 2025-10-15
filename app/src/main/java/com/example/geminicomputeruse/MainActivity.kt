@@ -17,8 +17,10 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ScrollView
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -32,6 +34,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var actionButton: Button
     private lateinit var logTextView: TextView
+    private lateinit var logScrollView: ScrollView
     private lateinit var promptEditText: EditText
     private lateinit var enableAccessibilityButton: Button
     private val apiKey = BuildConfig.API_KEY
@@ -72,7 +75,9 @@ class MainActivity : AppCompatActivity() {
 
         actionButton = findViewById(R.id.action_button)
         logTextView = findViewById(R.id.log_textview)
+        logScrollView = findViewById(R.id.log_scrollview)
         promptEditText = findViewById(R.id.prompt_edittext)
+        val clearLogsButton = findViewById<Button>(R.id.clear_logs_button)
         enableAccessibilityButton = findViewById(R.id.enable_accessibility_button)
 
         mediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
@@ -87,6 +92,10 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        clearLogsButton.setOnClickListener {
+            logTextView.text = "Logs cleared..."
+        }
+
         viewModel.error.observe(this) { error ->
             logTextView.append("\nError: $error")
             stopScreenCapture()
@@ -95,6 +104,7 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             LogBus.logs.collectLatest { log ->
                 logTextView.append("\n$log")
+                logScrollView.post { logScrollView.fullScroll(View.FOCUS_DOWN) }
             }
         }
 
