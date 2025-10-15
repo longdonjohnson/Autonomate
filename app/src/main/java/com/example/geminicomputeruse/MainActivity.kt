@@ -14,14 +14,12 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
-import android.util.DisplayMetrics
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-
-class MainActivity : AppCompatActivity() {
+import androidx.window.layout.WindowMetricsCalculator
 
     private lateinit var actionButton: Button
     private lateinit var responseTextView: TextView
@@ -73,17 +71,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startScreenCapture() {
-        val displayMetrics = DisplayMetrics()
-        windowManager.defaultDisplay.getMetrics(displayMetrics)
-        val screenWidth = displayMetrics.widthPixels
-        val screenHeight = displayMetrics.heightPixels
+        val windowMetrics = WindowMetricsCalculator.getOrCreate().computeCurrentWindowMetrics(this)
+        val screenWidth = windowMetrics.bounds.width()
+        val screenHeight = windowMetrics.bounds.height()
+        val densityDpi = resources.displayMetrics.densityDpi
 
         imageReader = ImageReader.newInstance(screenWidth, screenHeight, android.graphics.PixelFormat.RGBA_8888, 2)
         virtualDisplay = mediaProjection?.createVirtualDisplay(
             "ScreenCapture",
             screenWidth,
             screenHeight,
-            displayMetrics.densityDpi,
+            densityDpi,
             DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
             imageReader.surface,
             null,

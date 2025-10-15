@@ -57,9 +57,9 @@ class MyAccessibilityService : AccessibilityService() {
                     targetNode?.performAction(scrollDirection)
                 }
             }
-            rootNode.recycle()
         } catch (e: JsonSyntaxException) {
             // Handle cases where the command is not valid JSON
+            rootNode?.recycle() // Recycle only if an error occurs, otherwise it's handled by the system
         }
     }
 
