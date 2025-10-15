@@ -42,6 +42,7 @@ class ScreenCaptureService : Service() {
         val data: Intent? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             intent?.getParcelableExtra("data", Intent::class.java)
         } else {
+            @Suppress("DEPRECATION")
             intent?.getParcelableExtra("data")
         }
         val prompt = intent?.getStringExtra("prompt") ?: ""
