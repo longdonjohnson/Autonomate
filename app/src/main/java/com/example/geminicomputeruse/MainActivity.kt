@@ -2,10 +2,8 @@ package com.example.geminicomputeruse
 
 import android.Manifest
 import android.app.Activity
-import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.media.projection.MediaProjectionManager
 import android.os.Build
@@ -17,13 +15,14 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 
+class MainActivity : AppCompatActivity() {
+
     private lateinit var actionButton: Button
     private lateinit var promptEditText: EditText
     private lateinit var enableAccessibilityButton: Button
-    private lateinit var apiKey: String
+    private val apiKey = BuildConfig.API_KEY
 
     private lateinit var mediaProjectionManager: MediaProjectionManager
-    private lateinit var sharedPreferences: SharedPreferences
 
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
@@ -61,13 +60,9 @@ import androidx.core.content.ContextCompat
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        sharedPreferences = getSharedPreferences("api_key_prefs", Context.MODE_PRIVATE)
-        apiKey = sharedPreferences.getString("api_key", BuildConfig.API_KEY) ?: BuildConfig.API_KEY
-
         actionButton = findViewById(R.id.action_button)
         promptEditText = findViewById(R.id.prompt_edittext)
         enableAccessibilityButton = findViewById(R.id.enable_accessibility_button)
-        val changeApiKeyButton = findViewById<Button>(R.id.change_api_key_button)
 
         mediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
 
@@ -81,31 +76,8 @@ import androidx.core.content.ContextCompat
             startActivity(intent)
         }
 
-        changeApiKeyButton.setOnClickListener {
-            showChangeApiKeyDialog()
-        }
-
         askNotificationPermission()
         askStoragePermission()
-    }
-
-    private fun showChangeApiKeyDialog() {
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle("Change API Key")
-
-        val input = EditText(this)
-        input.setText(apiKey)
-        builder.setView(input)
-
-        builder.setPositiveButton("OK") { dialog, _ ->
-            val newApiKey = input.text.toString()
-            sharedPreferences.edit().putString("api_key", newApiKey).apply()
-            apiKey = newApiKey
-            dialog.dismiss()
-        }
-        builder.setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
-
-        builder.show()
     }
 
     private fun askNotificationPermission() {

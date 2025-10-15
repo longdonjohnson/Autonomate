@@ -15,7 +15,6 @@ import android.os.IBinder
 import android.os.Looper
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.ViewModelProvider
-import java.io.ByteArrayOutputStream
 
 class ScreenCaptureService : Service() {
 

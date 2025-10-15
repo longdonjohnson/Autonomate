@@ -36,14 +36,4 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp"/>
 
-    <Button
-        android:id="@+id/change_api_key_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Change API Key"
-        app:layout_constraintTop_toBottomOf="@id/enable_accessibility_button"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"/>
-
 </androidx.constraintlayout.widget.ConstraintLayout>
