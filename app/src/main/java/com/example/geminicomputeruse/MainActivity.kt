@@ -48,7 +48,11 @@ class MainActivity : AppCompatActivity() {
                 putExtra("prompt", promptEditText.text.toString())
                 putExtra("apiKey", apiKey)
             }
-            startForegroundService(serviceIntent)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(serviceIntent)
+            } else {
+                startService(serviceIntent)
+            }
         }
     }
 
