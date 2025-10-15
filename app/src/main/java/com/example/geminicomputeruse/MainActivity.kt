@@ -1,14 +1,17 @@
 package com.example.geminicomputeruse
 
+import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
 import android.media.ImageReader
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
@@ -19,12 +22,16 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.window.layout.WindowMetricsCalculator
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var actionButton: Button
-    private lateinit var responseTextView: TextView
+    private lateinit var logTextView: TextView
     private lateinit var promptEditText: EditText
     private lateinit var enableAccessibilityButton: Button
     private val apiKey = BuildConfig.API_KEY
@@ -35,6 +42,20 @@ class MainActivity : AppCompatActivity() {
     private lateinit var imageReader: ImageReader
 
     private val viewModel: MainViewModel by viewModels()
+
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+            if (isGranted) {
+                // Permission is granted. Continue the action or workflow in your
+                // app.
+            } else {
+                // Explain to the user that the feature is unavailable because the
+                // features requires a permission that the user has denied. At the
+                // same time, respect the user's decision. Don't link to system
+                // settings in an effort to convince the user to change their
+                // decision.
+            }
+        }
 
     private val screenCaptureLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -50,7 +71,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         actionButton = findViewById(R.id.action_button)
-        responseTextView = findViewById(R.id.response_textview)
+        logTextView = findViewById(R.id.log_textview)
         promptEditText = findViewById(R.id.prompt_edittext)
         enableAccessibilityButton = findViewById(R.id.enable_accessibility_button)
 
@@ -67,8 +88,35 @@ class MainActivity : AppCompatActivity() {
         }
 
         viewModel.error.observe(this) { error ->
-            responseTextView.text = "Error: $error"
+            logTextView.append("\nError: $error")
             stopScreenCapture()
+        }
+
+        lifecycleScope.launch {
+            LogBus.logs.collectLatest { log ->
+                logTextView.append("\n$log")
+            }
+        }
+
+        askNotificationPermission()
+    }
+
+    private fun askNotificationPermission() {
+        // This is only necessary for API level >= 33 (TIRAMISU)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
+                PackageManager.PERMISSION_GRANTED
+            ) {
+                // FCM SDK (and your app) can post notifications.
+            } else if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+                // TODO: display an educational UI explaining to the user the features that will be enabled
+                //       by granting the POST_NOTIFICATION permission. This UI should provide the user
+                //       "OK" and "No thanks" buttons. If the user selects "OK," directly request the permission.
+                //       If the user selects "No thanks," allow the user to continue without notifications.
+            } else {
+                // Directly ask for the permission
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
         }
     }
 
