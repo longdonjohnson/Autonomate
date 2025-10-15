@@ -2,40 +2,30 @@ package com.example.geminicomputeruse
 
 import android.accessibilityservice.AccessibilityService
 import android.view.accessibility.AccessibilityNodeInfo
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.os.Bundle
 import android.view.accessibility.AccessibilityEvent
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 class MyAccessibilityService : AccessibilityService() {
 
-    companion object {
-        const val ACTION_PERFORM_ACTION = "com.example.geminicomputeruse.PERFORM_ACTION"
-        const val EXTRA_ACTION_COMMAND = "extra_action_command"
-    }
-
     private val gson = Gson()
-
-    private val actionReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == ACTION_PERFORM_ACTION) {
-                val command = intent.getStringExtra(EXTRA_ACTION_COMMAND)
-                if (command != null) {
-                    processCommand(command)
-                }
-            }
-        }
-    }
+    private val serviceJob = SupervisorJob()
+    private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
 
     override fun onServiceConnected() {
         super.onServiceConnected()
-        val filter = IntentFilter(ACTION_PERFORM_ACTION)
-        LocalBroadcastManager.getInstance(this).registerReceiver(actionReceiver, filter)
+        serviceScope.launch {
+            AccessibilityCommandBus.commands.collectLatest { command ->
+                processCommand(command)
+            }
+        }
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -97,12 +87,12 @@ class MyAccessibilityService : AccessibilityService() {
     }
 
     override fun onInterrupt() {
-        // Not needed for now
+        serviceJob.cancel()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(actionReceiver)
+        serviceJob.cancel()
     }
 
     data class ActionData(

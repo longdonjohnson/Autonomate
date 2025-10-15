@@ -20,7 +20,6 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 class MainActivity : AppCompatActivity() {
 
@@ -67,15 +66,6 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        viewModel.response.observe(this) { response ->
-            responseTextView.text = response
-            // Send the command to the accessibility service
-            val intent = Intent(MyAccessibilityService.ACTION_PERFORM_ACTION)
-            intent.putExtra(MyAccessibilityService.EXTRA_ACTION_COMMAND, response)
-            LocalBroadcastManager.getInstance(this@MainActivity).sendBroadcast(intent)
-            stopScreenCapture()
-        }
-
         viewModel.error.observe(this) { error ->
             responseTextView.text = "Error: $error"
             stopScreenCapture()
@@ -102,7 +92,7 @@ class MainActivity : AppCompatActivity() {
 
         // A short delay to allow the virtual display to be set up.
         // In a production app, a more robust solution would be needed to ensure the
-        // screen is fully rendered before capturing.
+        -        // screen is fully rendered before capturing.
         Handler(Looper.getMainLooper()).postDelayed({
             val image = imageReader.acquireLatestImage()
             if (image != null) {
@@ -123,6 +113,7 @@ class MainActivity : AppCompatActivity() {
                 // Now we have the bitmap, let's call the Gemini API via the ViewModel
                 val prompt = promptEditText.text.toString()
                 viewModel.getResponse(apiKey, prompt, bitmap)
+                // The screen capture will be stopped by the error observer if an error occurs
             }
         }, 1000)
     }
