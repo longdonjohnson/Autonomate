@@ -59,7 +59,6 @@ class MyAccessibilityService : AccessibilityService() {
             }
         } catch (e: JsonSyntaxException) {
             // Handle cases where the command is not valid JSON
-            rootNode?.recycle() // Recycle only if an error occurs, otherwise it's handled by the system
         }
     }
 
