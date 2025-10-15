@@ -2,18 +2,17 @@ package com.example.geminicomputeruse
 
 import android.graphics.Bitmap
 import com.google.ai.client.generativeai.GenerativeModel
-import com.google.ai.client.generativeai.type.GenerateContentConfig
 import com.google.ai.client.generativeai.type.content
 import com.google.ai.client.generativeai.type.tool
-import com.google.ai.client.generativeai.type.computerUse
+import com.google.ai.client.generativeai.type.computeruse
 import com.google.ai.client.generativeai.type.Environment
 
 object GeminiPro {
 
     suspend fun getResponse(apiKey: String, prompt: String, image: Bitmap): String {
         val computerUseTool = tool {
-            computerUse(
-                environment = Environment.ENVIRONMENT_MOBILE,
+            computeruse {
+                environment = Environment.ENVIRONMENT_MOBILE
                 excludedPredefinedFunctions = listOf(
                     "open_web_browser",
                     "search",
@@ -24,7 +23,7 @@ object GeminiPro {
                     "key_combination",
                     "drag_and_drop"
                 )
-            )
+            }
         }
 
         val generativeModel = GenerativeModel(
