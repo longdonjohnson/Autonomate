@@ -6,6 +6,7 @@ import com.google.ai.client.generativeai.type.GenerateContentConfig
 import com.google.ai.client.generativeai.type.content
 import com.google.ai.client.generativeai.type.generationConfig
 import com.google.ai.client.generativeai.type.tool
+import com.google.ai.client.generativeai.type.computerUse
 
 object GeminiPro {
 
