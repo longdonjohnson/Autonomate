@@ -13,6 +13,8 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
+class MyAccessibilityService : AccessibilityService() {
+
     private val gson = Gson()
     private val serviceJob = SupervisorJob()
     private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
@@ -53,7 +55,7 @@ import kotlinx.coroutines.launch
                         AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE,
                         actionData.text
                     )
-                    targetNode?.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, arguments)
+                    targetNode.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, arguments)
                 }
                 "scroll" -> {
                     val scrollDirection = if (actionData.direction?.lowercase() == "up") {
@@ -61,7 +63,7 @@ import kotlinx.coroutines.launch
                     } else {
                         AccessibilityNodeInfo.ACTION_SCROLL_FORWARD
                     }
-                    targetNode?.performAction(scrollDirection)
+                    targetNode.performAction(scrollDirection)
                 }
             }
         } catch (e: JsonSyntaxException) {
