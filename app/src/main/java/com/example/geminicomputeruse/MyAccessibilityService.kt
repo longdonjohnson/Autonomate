@@ -1,7 +1,7 @@
 package com.example.geminicomputeruse
 
 import android.accessibilityservice.AccessibilityService
-import android.accessibilityservice.AccessibilityNodeInfo
+import android.view.accessibility.AccessibilityNodeInfo
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
