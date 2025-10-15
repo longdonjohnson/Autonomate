@@ -92,7 +92,7 @@ class MainActivity : AppCompatActivity() {
 
         // A short delay to allow the virtual display to be set up.
         // In a production app, a more robust solution would be needed to ensure the
-        -        // screen is fully rendered before capturing.
+        // screen is fully rendered before capturing.
         Handler(Looper.getMainLooper()).postDelayed({
             val image = imageReader.acquireLatestImage()
             if (image != null) {
