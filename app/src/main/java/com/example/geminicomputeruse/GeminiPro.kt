@@ -8,7 +8,7 @@ object GeminiPro {
 
     suspend fun getResponse(apiKey: String, prompt: String, image: Bitmap): String {
         val generativeModel = GenerativeModel(
-            modelName = "gemini-pro-vision",
+            modelName = "gemini-2.5-computer-use-preview-10-2025",
             apiKey = apiKey
         )
 
