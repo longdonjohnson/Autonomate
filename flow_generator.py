@@ -4,26 +4,36 @@ from nlp_processor import process_command
 
 def generate_flow(processed_command):
     """
-    Generates a .flo file from the processed command using valid Automate blocks.
+    Generates a .flo file from the processed command using the correct syntax.
     """
 
     if processed_command["intent"] == "create_message_flow":
         flow = []
 
-        # Initialize the combined inbox
-        flow.append({
-            "block": {
-                "type": "variable_set",
-                "variable": "combined_inbox",
-                "value": "[]"
+        # Initialize the combined inbox and filtered inbox
+        flow.extend([
+            {
+                "block": {
+                    "type": "set_variable",
+                    "variable": "combined_inbox",
+                    "value": "[]"
+                }
+            },
+            {
+                "block": {
+                    "type": "set_variable",
+                    "variable": "filtered_inbox",
+                    "value": "[]"
+                }
             }
-        })
+        ])
+
 
         # Trigger for incoming SMS messages
         if "sms" in processed_command["sources"]:
             flow.append({
                 "block": {
-                    "type": "sms_received",
+                    "type": "receive_sms",
                     "trigger": True,
                     "variable": "incoming_sms"
                 }
@@ -38,51 +48,115 @@ def generate_flow(processed_command):
 
         # Trigger for incoming Gmail messages (using a loop and unread count)
         if "gmail" in processed_command["sources"]:
-            flow.append({
-                "block": {
-                    "type": "fork",
-                    "child_uri": "flow:gmail_checker"
+            flow.extend([
+                {
+                    "block": {
+                        "type": "gmail_unread_count",
+                        "variable": "unread_count"
+                    }
+                },
+                {
+                    "block": {
+                        "type": "for_each",
+                        "container": "0..%unread_count",
+                        "member": "i"
+                    }
+                },
+                {
+                    "block": {
+                        "type": "array_add",
+                        "array": "combined_inbox",
+                        "value": "%gmail_message[i]" # Placeholder for actual message
+                    }
                 }
-            })
+            ])
 
-        # Placeholder for sorting and filtering logic
-        flow.append({
-            "block": {
-                "type": "log_append",
-                "message": "New message received. Inbox now contains {len(combined_inbox)} messages. Implement sorting and filtering logic here."
+
+        # Single-flow bubble sort implementation
+        flow.extend([
+            {
+                "block": {
+                    "type": "set_variable",
+                    "variable": "n",
+                    "value": "len(combined_inbox)"
+                }
+            },
+            {
+                "block": {
+                    "type": "for_each",
+                    "container": "0..%n-1",
+                    "member": "i",
+                }
+            },
+            {
+                "block": {
+                    "type": "for_each",
+                    "container": "0..%n-%i-1",
+                    "member": "j",
+                }
+            },
+            {
+                "block": {
+                    "type": "conditional",
+                    "condition": "%combined_inbox[j].timestamp > %combined_inbox[j+1].timestamp",
+                }
+            },
+            {
+                "block": {
+                    "type": "set_variable",
+                    "variable": "temp",
+                    "value": "%combined_inbox[j]"
+                }
+            },
+            {
+                "block": {
+                    "type": "array_set",
+                    "array": "combined_inbox",
+                    "index": "%j",
+                    "value": "%combined_inbox[j+1]"
+                }
+            },
+            {
+                "block": {
+                    "type": "array_set",
+                    "array": "combined_inbox",
+                    "index": "%j+1",
+                    "value": "%temp"
+                }
             }
-        })
+        ])
+
+        # Filtering logic
+        flow.extend([
+            {
+                "block": {
+                    "type": "for_each",
+                    "container": "combined_inbox",
+                    "member": "message"
+                }
+            },
+            {
+                "block": {
+                    "type": "conditional",
+                    "condition": "%message.sender == %filter_sender" # filter_sender would be an input
+                }
+            },
+            {
+                "block": {
+                    "type": "array_add",
+                    "array": "filtered_inbox",
+                    "value": "%message"
+                }
+            }
+        ])
+
 
         return flow
     else:
         return None
 
 if __name__ == '__main__':
-    # This is a simplified representation of the gmail checking flow
-    gmail_checker_flow = [
-        {
-            "block": {
-                "label": "gmail_checker",
-                "type": "gmail_unread_count",
-                "variable": "unread_count"
-            }
-        },
-        {
-            "block": {
-                "type": "expression_true",
-                "expression": "{unread_count} > 0",
-                "true_path": "flow:fetch_gmail"
-            }
-        },
-        {
-            "block": {
-                "type": "delay",
-                "duration": "60s"
-            }
-        }
-    ]
-
-    example_command = "I need a flow designed and created in the open flowchart editor that will combine all incoming text messages and emails into a single inbox that is separated by thread and ordered in chronological order received. Include a filter to regroup and organize by sender in chronological order received."
+    example_command = "I need a flow that will combine all incoming text messages and emails, then sort by date and filter by sender."
     processed_command = process_command(example_command)
     generated_flow = generate_flow(processed_command)
 
@@ -96,4 +170,4 @@ if __name__ == '__main__':
 
         print("Flow generated successfully!")
     else:
-        print("Could not generate flow for the given command.")
+        "Could not generate flow for the given command."

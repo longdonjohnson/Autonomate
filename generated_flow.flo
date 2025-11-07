@@ -3,6 +3,10 @@ block:
   variable: combined_inbox
   value: []
 block:
+  type: variable_set
+  variable: filtered_inbox
+  value: []
+block:
   type: sms_received
   trigger: True
   variable: incoming_sms
@@ -11,8 +15,53 @@ block:
   array: combined_inbox
   value: %incoming_sms
 block:
-  type: fork
-  child_uri: flow:gmail_checker
+  type: gmail_unread_count
+  variable: unread_count
 block:
-  type: log_append
-  message: New message received. Inbox now contains {len(combined_inbox)} messages. Implement sorting and filtering logic here.
+  type: for_each
+  container: 0..{unread_count}
+  member: i
+block:
+  type: array_add
+  array: combined_inbox
+  value: {gmail_message[i]}
+block:
+  type: variable_set
+  variable: n
+  value: {len(combined_inbox)}
+block:
+  type: for_each
+  container: 0..{n-1}
+  member: i
+block:
+  type: for_each
+  container: 0..{n-i-1}
+  member: j
+block:
+  type: expression_true
+  expression: {combined_inbox[j].timestamp} > {combined_inbox[j+1].timestamp}
+block:
+  type: variable_set
+  variable: temp
+  value: {combined_inbox[j]}
+block:
+  type: array_set
+  array: combined_inbox
+  index: {j}
+  value: {combined_inbox[j+1]}
+block:
+  type: array_set
+  array: combined_inbox
+  index: {j+1}
+  value: {temp}
+block:
+  type: for_each
+  container: combined_inbox
+  member: message
+block:
+  type: expression_true
+  expression: {message.sender} == {filter_sender}
+block:
+  type: array_add
+  array: filtered_inbox
+  value: {message}

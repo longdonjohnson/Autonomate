@@ -2,7 +2,6 @@
 import json
 from nlp_processor import process_command
 from flow_generator import generate_flow
-from interaction_handler import handle_interaction
 
 def main():
     """
@@ -16,15 +15,7 @@ def main():
     processed_command = process_command(command)
 
     # Handle any ambiguity
-    clarification_question = handle_interaction(processed_command)
-    while clarification_question:
-        print(clarification_question)
-        command = input("Please provide more information: ")
-        # In a real application, we would update the processed_command
-        # with the new information. For now, we'll just re-process the
-        # original command with the added context.
-        processed_command = process_command(command)
-        clarification_question = handle_interaction(processed_command)
+    # ... (interaction handling logic will be added here later)
 
     # Generate the flow
     generated_flow = generate_flow(processed_command)

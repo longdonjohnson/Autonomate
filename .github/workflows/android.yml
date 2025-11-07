@@ -20,6 +20,14 @@ jobs:
         distribution: 'temurin'
         cache: gradle
 
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Run Python tests
+      run: python3 test_autonomate.py
+
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build with Gradle
