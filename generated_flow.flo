@@ -1,0 +1,18 @@
+block:
+  type: variable_set
+  variable: combined_inbox
+  value: []
+block:
+  type: sms_received
+  trigger: True
+  variable: incoming_sms
+block:
+  type: array_add
+  array: combined_inbox
+  value: %incoming_sms
+block:
+  type: fork
+  child_uri: flow:gmail_checker
+block:
+  type: log_append
+  message: New message received. Inbox now contains {len(combined_inbox)} messages. Implement sorting and filtering logic here.

@@ -1,0 +1,69 @@
+# Receive SMS and Create User Phone Variable
+block:
+type: receive_sms
+trigger: true
+variable: user_phone
+
+# Initialize Balance
+block:
+type: set_variable
+variable: balance
+value: 100
+
+# Main Menu
+block:
+type: send_sms
+message: "Welcome to the game! Type 'bj21', 'slots', or 'hilo' to play."
+to: %user_phone
+
+# Blackjack
+block:
+type: conditional
+condition: "%message = 'bj21'"
+true:
+block:
+type: send_sms
+message: "Place your bet (1-10 credits):"
+to: %user_phone
+variable: bet
+
+# Slots
+block:
+type: conditional
+condition: "%message = 'slots'"
+true:
+block:
+type: send_sms
+message: "Place your bet (1-10 credits):"
+to: %user_phone
+variable: bet
+
+# HiLo
+block:
+type: conditional
+condition: "%message = 'hilo'"
+true:
+block:
+type: send_sms
+message: "Place your bet (1-10 credits):"
+to: %user_phone
+variable: bet
+
+# Game Logic
+...
+
+# Settings
+block:
+type: set_variable
+variable: settings
+value: {
+"bj21": {"deck": ["Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King"], "payout": {"blackjack": 3, "win": 2, "draw": 1, "loss": 0}},
+"slots": {"reels": ["¢", "€", "¥", "$", "★", "¡", "¿", "?", "∆", "§"], "symbols": ["¢", "€", "¥", "$", "★", "¡", "¿", "?", "∆", "§"], "payout": {"3x": 10, "2x": 5, "1x": 1}},
+"hilo": {"number": %random_number, "payout": {"win": 2, "loss": 0}}
+}
+
+# Random Number
+block:
+type: set_variable
+variable: random_number
+value: random(99)+1
