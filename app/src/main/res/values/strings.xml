@@ -1,4 +1,0 @@
-<resources>
-    <string name="app_name">GeminiComputerUse</string>
-    <string name="accessibility_service_description">This service allows the app to interact with the UI on your behalf.</string>
-</resources>
